@@ -100,7 +100,7 @@ public class RPCFramework {
                             return result;
                         }
                     }
-                });
+                }).start();
         return proxy;
     }
 }
