@@ -1,32 +1,74 @@
+import java.util.Arrays;
+
 /**
- * 给定一个包含 m x n 个元素的矩阵（m 行, n 列），请按照顺时针螺旋顺序，返回矩阵中的所有元素。
- * 示例 1:
- * 输入:
+ * 给定一个正整数 n，生成一个包含 1 到 n2 所有元素，且元素按顺时针顺序螺旋排列的正方形矩阵。
+ * 示例:
+ * 输入: 3
+ * 输出:
  * [[ 1, 2, 3 ],
- * [ 4, 5, 6 ],
- * [ 7, 8, 9 ]]
- * 输出: [1,2,3,6,9,8,7,4,5]
- * 示例 2:
- * 输入:
- * [[1, 2, 3, 4],
- * [5, 6, 7, 8],
- * [9,10,11,12]]
- * 输出: [1,2,3,4,8,12,11,10,9,5,6,7]
- * 思路 :状态转移， 同螺旋矩阵2，做好边界判定，读取过得设置为-1
+ * [ 8, 9, 4 ],
+ * [ 7, 6, 5 ]]
+ * 思路: 状态转移，右 下 左 上循环
  */
-public class SpiralMatrix {
-    private enum Direction {
+public class SpiralMatrix2 {
+    private enum Director {
         RIGHT, DOWN, LEFT, UP
     }
-
-    public List<Integer> spiralOrder(int[][] matrix) {
-        List<Integer> results = new ArrayList<>(matrix.length * matrix[0].length);
-
+    public int[][] generateMatrix(int n) {
+        int maxN = n * n;
+        int[][] results = new int[n][n];
+        if (n == 1){
+            results[0][0] = 1;
+            return results;
+        }
+        int row = 0, col = 0, nowNum = 1, round = 0;
+        Director nowDirector = Director.RIGHT;
+        while (nowNum <= maxN) {
+            results[row][col] = nowNum;
+            switch (nowDirector) {
+                case RIGHT:
+                    if (col + 1 >= n - round) {
+                        nowDirector = Director.DOWN;
+                        row++;
+                        break;
+                    }
+                    col++;
+                    break;
+                case DOWN:
+                    if (row + 1 >= n - round) {
+                        nowDirector = Director.LEFT;
+                        col--;
+                        break;
+                    }
+                    row++;
+                    break;
+                case LEFT:
+                    if (col - 1 < round) {
+                        nowDirector = Director.UP;
+                        row--;
+                        break;
+                    }
+                    col--;
+                    break;
+                case UP:
+                    if (row - 2 < round) {
+                        nowDirector = Director.RIGHT;
+                        round++;
+                        col++;
+                        break;
+                    }
+                    row--;
+                    break;
+            }
+            nowNum++;
+        }
         return results;
     }
 
     public static void main(String[] args) {
-        int[][] matrix = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}};
-        System.out.println(new SpiralMatrix().spiralOrder(matrix));
+//        int n = 3;
+//        int n = 4;
+        int n = 5;
+        System.out.println(Arrays.deepToString(new SpiralMatrix2().generateMatrix(n)));
     }
 }
