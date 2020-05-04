@@ -28,21 +28,29 @@ public class SubarraySumEqualsK {
             }
         }*/
         // HashMap策略
-        List<Integer> tempIndexes;
-        List<Integer> nowIndexes;
-        Map<Integer, List<Integer>> sumIndexMap = new HashMap<>(nums.length);
-        sumIndexMap.put(nums[0], new ArrayList<>(Collections.singletonList(0)));
+//         List<Integer> tempIndexes;
+//         List<Integer> nowIndexes;
+        // 将链表换成数字减少隐藏的时间开销
+        Integer tempIndexes;
+        Integer nowIndexes;
+//         Map<Integer, List<Integer>> sumIndexMap = new HashMap<>(nums.length);
+        Map<Integer, Integer> sumIndexMap = new HashMap<>(nums.length);
+//         sumIndexMap.put(nums[0], new ArrayList<>(Collections.singletonList(0)));
+        sumIndexMap.put(nums[0], 1);
         result += nums[0] == k ? 1 : 0;
         for (int i = 1; i < nums.length; i++) {
             nums[i] = nums[i - 1] + nums[i];
             if ((tempIndexes = sumIndexMap.get(nums[i] - k)) != null) {
-                result += tempIndexes.size();
+//                 result += tempIndexes.size();
+                result += tempIndexes;
             }
             if ((nowIndexes = sumIndexMap.get(nums[i])) == null) {
-                sumIndexMap.put(nums[i], new ArrayList<>(Collections.singletonList(i)));
+//                 sumIndexMap.put(nums[i], new ArrayList<>(Collections.singletonList(i)));
+                sumIndexMap.put(nums[i], 1);
             } else {
-                nowIndexes.add(i);
-                sumIndexMap.put(nums[i],nowIndexes);
+//                 nowIndexes.add(i);
+//                 sumIndexMap.put(nums[i],nowIndexes);
+                sumIndexMap.put(nums[i], nowIndexes + 1);
             }
             result += nums[i] - k == 0 ? 1 : 0;
         }
