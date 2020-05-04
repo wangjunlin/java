@@ -8,6 +8,7 @@
  * 数组中元素的范围是 [-1000, 1000] ，且整数 k 的范围是 [-1e7, 1e7]。
  * 思路: 累计和，当前数组索引的值为从0到当前索引的值得总计和
  * 再遍历总计和
+ * 使用哈希表存储，总体时间复杂度为O(n)
  */
 public class SubarraySumEqualsK {
     public int subarraySum(int[] nums, int k) {
