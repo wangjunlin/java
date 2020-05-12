@@ -1,0 +1,77 @@
+package com.demo.algorithm.dynamicprogramming;
+
+/**
+ * 64. 最小路径和
+ * 给定一个包含非负整数的 m x n 网格，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。
+ * 说明：每次只能向下或者向右移动一步。
+ * 示例:
+ * 输入:
+ * [[1,3,1],
+ * [1,5,1],
+ * [4,2,1]]
+ * 输出: 7
+ * 解释: 因为路径 1→3→1→1→1 的总和最小。
+ * 思路: 只能向右/下，当前最佳路线和右/下的子结构相关，采用动态规划
+ * 子结构为 Grid[i][j] = Grid[i][j] + Math.min(Grid[i+1][j],Grid[i][j+1])
+ * 自底向上的解法: 时间复杂度O(n*m) 空间复杂度O(1)
+ * 自顶向下的解法:
+ */
+public class MinimumPathSum {
+    private boolean[][] isCheck;
+
+    public int minPathSum(int[][] grid) {
+//        dpByBottomUp(grid);
+        dpByTopDown(grid);
+        return grid[0][0];
+    }
+
+    private void dpByTopDown(int[][] grid) {
+        isCheck = new boolean[grid.length][grid[0].length];
+        RecursiveWithMemo(grid, 0, 0);
+    }
+
+    private int RecursiveWithMemo(int[][] grid, int row, int col) {
+        if (row == grid.length - 1 && col == grid[0].length - 1) {
+            return grid[row][col];
+        }
+        if (row > grid.length - 1) {
+            return Integer.MAX_VALUE;
+        }
+        if (col > grid[0].length - 1) {
+            return Integer.MAX_VALUE;
+        }
+        if (isCheck[row][col]) {
+            return grid[row][col];
+        }
+        isCheck[row][col] = true;
+        grid[row][col] = Math.min(RecursiveWithMemo(grid, row + 1, col), RecursiveWithMemo(grid, row, col + 1)) + grid[row][col];
+        return grid[row][col];
+    }
+
+    private void dpByBottomUp(int[][] grid) {
+        for (int row = grid.length - 1; row > -1; row--) {
+            for (int col = grid[0].length - 1; col > -1; col--) {
+                if (row == grid.length - 1 && col == grid[0].length - 1) {
+                    continue;
+                }
+                if (row == grid.length - 1) {
+                    grid[row][col] = grid[row][col] + grid[row][col + 1];
+                    continue;
+                }
+                if (col == grid[0].length - 1) {
+                    grid[row][col] = grid[row][col] + grid[row + 1][col];
+                    continue;
+                }
+                grid[row][col] = grid[row][col] + Math.min(grid[row + 1][col], grid[row][col + 1]);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+//        int[][] grid = {{1, 3, 1}, {1, 5, 1}, {4, 2, 1}};
+//        int[][] grid = {{1, 1}};
+//        int[][] grid = {{0}};
+        int[][] grid = {{1}};
+        System.out.println(new MinimumPathSum().minPathSum(grid));
+    }
+}
