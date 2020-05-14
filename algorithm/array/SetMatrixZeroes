@@ -1,0 +1,128 @@
+/**
+ * 73. 矩阵置零
+ * 给定一个 m x n 的矩阵，如果一个元素为 0，则将其所在行和列的所有元素都设为 0。请使用原地算法。
+ * 示例 1:
+ * 输入:
+ * [[1,1,1],
+ *   [1,0,1],
+ *   [1,1,1]]
+ * 输出:
+ * [[1,0,1],
+ *   [0,0,0],
+ *   [1,0,1]]
+ * 示例 2:
+ * 输入:
+ * [[0,1,2,0],
+ *   [3,4,5,2],
+ *   [1,3,1,5]]
+ * 输出:
+ * [[0,0,0,0],
+ *   [0,4,5,0],
+ *   [0,3,1,0]]
+ * 进阶:
+ * 一个直接的解决方案是使用  O(mn) 的额外空间，但这并不是一个好的解决方案。
+ * 一个简单的改进方案是使用 O(m + n) 的额外空间，但这仍然不是最好的解决方案。
+ * 你能想出一个常数空间的解决方案吗？
+ * 思路: 常数级，变更状态，状态枚举 ,这个状态志要注意，有可能当做入参。。。
+ * 行传递和纵传递有可能会交叉，如果同时是行、纵传递，则置为0
+ * 时间复杂度3 * O（m * n）即O(m * n)
+ * 空间复杂度O(1)
+ */
+public class SetMatrixZeroes {
+    private static final int ROW_ZERO = Short.MIN_VALUE;
+    private static final int COL_ZERO = Short.MAX_VALUE;
+
+    public void setZeroes(int[][] matrix) {
+        for (int row = 0; row < matrix.length; row++) {
+            for (int col = 0; col < matrix[0].length; col++) {
+                checkAndSet(matrix, row, col);
+            }
+        }
+        for (int row = matrix.length - 1; row > -1; row--) {
+            for (int col = matrix[0].length - 1; col > -1; col--) {
+                checkAndSet(matrix, row, col);
+            }
+        }
+        for (int row = 0; row < matrix.length; row++) {
+            for (int col = 0; col < matrix[0].length; col++) {
+                if (matrix[row][col] == ROW_ZERO || matrix[row][col] == COL_ZERO) {
+                    matrix[row][col] = 0;
+                }
+            }
+        }
+    }
+
+    private void checkAndSet(int[][] matrix, int row, int col) {
+        if (matrix[row][col] == 0) {
+            return;
+        }
+        checkUp(matrix, row, col);
+        checkLeft(matrix, row, col);
+        checkDown(matrix, row, col);
+        checkRight(matrix, row, col);
+    }
+
+    private void checkUp(int[][] matrix, int row, int col) {
+        if (row <= 0) {
+            return;
+        }
+        if (matrix[row][col] == 0) {
+            return;
+        }
+        if (matrix[row - 1][col] != COL_ZERO && matrix[row - 1][col] != 0) {
+            return;
+        }
+        matrix[row][col] = matrix[row][col] == ROW_ZERO ? 0 : COL_ZERO;
+    }
+
+    private void checkLeft(int[][] matrix, int row, int col) {
+        if (col <= 0) {
+            return;
+        }
+        if (matrix[row][col] == 0) {
+            return;
+        }
+        if (matrix[row][col - 1] != ROW_ZERO && matrix[row][col - 1] != 0) {
+            return;
+        }
+        matrix[row][col] = matrix[row][col] == COL_ZERO ? 0 : ROW_ZERO;
+    }
+
+    private void checkDown(int[][] matrix, int row, int col) {
+        if (row >= matrix.length - 1) {
+            return;
+        }
+        if (matrix[row][col] == 0) {
+            return;
+        }
+        if (matrix[row + 1][col] != COL_ZERO && matrix[row + 1][col] != 0) {
+            return;
+        }
+        matrix[row][col] = matrix[row][col] == ROW_ZERO ? 0 : COL_ZERO;
+    }
+
+    private void checkRight(int[][] matrix, int row, int col) {
+        if (col >= matrix[0].length - 1) {
+            return;
+        }
+        if (matrix[row][col] == 0) {
+            return;
+        }
+        if (matrix[row][col + 1] != ROW_ZERO && matrix[row][col + 1] != 0) {
+            return;
+        }
+        matrix[row][col] = matrix[row][col] == COL_ZERO ? 0 : ROW_ZERO;
+    }
+
+    public static void main(String[] args) {
+//        int[][] matrix = {{0, 1, 2, 0}, {3, 4, 5, 2}, {1, 3, 1, 5}};
+//        int[][] matrix = {{1, 1, 1, 1, 1}, {1, 1, 1, 1, 1}, {1, 1, 0, 1, 1}, {1, 1, 1, 1, 1}, {1, 1, 1, 1, 1}};
+//        int[][] matrix = {{0}};
+//        int[][] matrix = {{0, 0, 0, 5}, {4, 3, 1, 4}, {0, 1, 1, 4}, {1, 2, 1, 3}, {0, 0, 1, 1}};
+        int[][] matrix = {{3, 5, 5, 6, 9, 1, 4, 5, 0, 5}, {2, 7, 9, 5, 9, 5, 4, 9, 6, 8}, {6, 0, 7, 8, 1, 0, 1, 6, 8, 1},
+                {7, 2, 6, 5, 8, 5, 6, 5, 0, 6}, {2, 3, 3, 1, 0, 4, 6, 5, 3, 5}, {5, 9, 7, 3, 8, 8, 5, 1, 4, 3},
+                {2, 4, 7, 9, 9, 8, 4, 7, 3, 7}, {3, 5, 2, 8, 8, 2, 2, 4, 9, 8}};
+        new SetMatrixZeroes().setZeroes(matrix);
+        System.out.println(Arrays.deepToString(matrix));
+    }
+}
