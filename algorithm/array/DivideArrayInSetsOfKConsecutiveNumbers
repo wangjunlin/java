@@ -1,0 +1,122 @@
+/**
+ * 1296. 划分数组为连续数字的集合
+ * 给你一个整数数组 nums 和一个正整数 k，请你判断是否可以把这个数组划分成一些由 k 个连续数字组成的集合。
+ * 如果可以，请返回 True；否则，返回 False。
+ * 示例 1：
+ * 输入：nums = [1,2,3,3,4,4,5,6], k = 4
+ * 输出：true
+ * 解释：数组可以分成 [1,2,3,4] 和 [3,4,5,6]。
+ * 示例 2：
+ * 输入：nums = [3,2,1,2,3,4,3,4,5,9,10,11], k = 3
+ * 输出：true
+ * 解释：数组可以分成 [1,2,3] , [2,3,4] , [3,4,5] 和 [9,10,11]。
+ * 示例 3：
+ * 输入：nums = [3,3,2,2,1,1], k = 3
+ * 输出：true
+ * 示例 4：
+ * 输入：nums = [1,2,3,4], k = 3
+ * 输出：false
+ * 解释：数组不能分成几个大小为 3 的子数组。
+ * 提示：
+ * 1 <= nums.length <= 10^5
+ * 1 <= nums[i] <= 10^9
+ * 1 <= k <= nums.length
+ * <p>
+ * 思路: 排序 + 查询表 + 双重遍历
+ * 优化：  排序 + Hash表记录num和count
+ */
+public class DivideArrayInSetsOfKConsecutiveNumbers {
+
+    public boolean isPossibleDivide(int[] nums, int k) {
+//        return sortAndForSolve(nums, k);
+        return divideByHash(nums, k);
+    }
+
+    private boolean divideByHash(int[] nums, int k) {
+        Arrays.sort(nums);
+        HashMap<Integer, Integer> numCountMap = new HashMap<>(nums.length / k);
+        Integer count;
+        for (int num : nums) {
+            if ((count = numCountMap.get(num)) == null) {
+                numCountMap.put(num, 1);
+                continue;
+            }
+            numCountMap.put(num, count + 1);
+        }
+
+        List<Integer> temp = new ArrayList<>(k);
+        int nextNumCount;
+        int nextNum;
+        for (int num : nums) {
+            if ((nextNumCount = numCountMap.getOrDefault(num, 0)) == 0) {
+                continue;
+            }
+            temp.add(num);
+            numCountMap.put(num, nextNumCount - 1);
+            for (int j = 0; j < k - 1; j++) {
+                nextNum = temp.get(temp.size() - 1) + 1;
+                if ((nextNumCount = numCountMap.getOrDefault(nextNum, 0)) == 0) {
+                    return false;
+                }
+                temp.add(nextNum);
+                numCountMap.put(nextNum, nextNumCount - 1);
+            }
+            System.out.println(temp);
+            temp.clear();
+        }
+        return true;
+    }
+
+    /**
+     * 排序 + 双重遍历，时间消耗大
+     *
+     * @param nums
+     * @param k
+     * @return
+     */
+    private boolean sortAndForSolve(int[] nums, int k) {
+        Arrays.sort(nums);
+        boolean[] isUsed = new boolean[nums.length];
+        List<Integer> temp = new ArrayList<>(k);
+        for (int begin = 0; begin < nums.length; begin++) {
+            if (isUsed[begin]) {
+                continue;
+            }
+            temp.clear();
+            temp.add(nums[begin]);
+            isUsed[begin] = true;
+            for (int j = begin + 1; j < nums.length; j++) {
+                if (isUsed[j]) {
+                    continue;
+                }
+                if (temp.size() == k) {
+                    System.out.println(temp);
+                    temp.clear();
+                    break;
+                }
+                if (nums[j] - 1 != temp.get(temp.size() - 1)) {
+                    continue;
+                }
+                isUsed[j] = true;
+                temp.add(nums[j]);
+            }
+            if (temp.size() == k) {
+                System.out.println(temp);
+                temp.clear();
+            }
+        }
+        return temp.isEmpty();
+    }
+
+    public static void main(String[] args) {
+//        int[] nums = {3, 2, 1, 2, 3, 4, 3, 4, 5, 9, 10, 11};
+//        int k = 3;
+//        int[] nums = {1, 2, 3, 4};
+//        int k = 3;
+//        int[] nums = {3, 3, 2, 2, 1, 1};
+//        int k = 3;
+        int[] nums = {1, 2};
+        int k = 2;
+        System.out.println(new DivideArrayInSetsOfKConsecutiveNumbers().isPossibleDivide(nums, k));
+    }
+}
