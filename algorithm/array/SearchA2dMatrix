@@ -1,0 +1,67 @@
+/**
+ * 74. 搜索二维矩阵
+ * 编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：
+ * 每行中的整数从左到右按升序排列。
+ * 每行的第一个整数大于前一行的最后一个整数。
+ * 示例 1:
+ * 输入:
+ * matrix = [[1,   3,  5,  7],
+ * [10, 11, 16, 20],
+ * [23, 30, 34, 50]]
+ * target = 3
+ * 输出: true
+ * 示例 2:
+ * 输入:
+ * matrix = [[1, 3,  5,  7],
+ * [10, 11, 16, 20],
+ * [23, 30, 34, 50]]
+ * target = 13
+ * 输出: false
+ * 思路： 二分法，分别横向纵向搜索
+ */
+public class SearchA2dMatrix {
+    public boolean searchMatrix(int[][] matrix, int target) {
+        if (matrix.length == 0) {
+            return false;
+        }
+        if (matrix[0].length == 0) {
+            return false;
+        }
+        int row;
+        if ((row = binarySearchRow(matrix, 0, matrix.length - 1, target)) == -1) {
+            return false;
+        }
+        return binarySearchCol(matrix[row], 0, matrix[row].length, target);
+    }
+
+    private int binarySearchRow(int[][] matrix, int low, int high, int target) {
+        if (low == high) {
+            // 注意有可能等于边界的情况
+            return matrix[low][matrix[low].length - 1] < target ? -1 : matrix[low][0] > target ? -1 : low;
+        }
+        int midian = (high + low) / 2;
+        int ret = binarySearchRow(matrix, low, midian, target);
+        int ret1 = binarySearchRow(matrix, midian + 1, high, target);
+        return Math.max(ret, ret1);
+    }
+
+    private boolean binarySearchCol(int[] matrixCol, int low, int high, int target) {
+        if (low == high) {
+            return matrixCol[low] == target;
+        }
+        int midian = (high + low) / 2;
+        if (matrixCol[midian] < target) {
+            return binarySearchCol(matrixCol, midian + 1, high, target);
+        } else {
+            return binarySearchCol(matrixCol, low, midian, target);
+        }
+    }
+
+    public static void main(String[] args) {
+//        int[][] matrix = {{1, 3, 5, 7}, {10, 11, 16, 20}, {23, 30, 34, 50}};
+//        int target = 21;
+        int[][] matrix = {{}};
+        int target = 2;
+        System.out.println(new SearchA2dMatrix().searchMatrix(matrix, target));
+    }
+}
