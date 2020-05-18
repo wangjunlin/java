@@ -1,0 +1,93 @@
+/**
+ * 1052. 爱生气的书店老板
+ * 今天，书店老板有一家店打算试营业 customers.length 分钟。每分钟都有一些顾客（customers[i]）会进入书店，所有这些顾客都会在那一分钟结束后离开。
+ * 在某些时候，书店老板会生气。 如果书店老板在第 i 分钟生气，那么 grumpy[i] = 1，否则 grumpy[i] = 0。 当书店老板生气时，那一分钟的顾客就会不满意，不生气则他们是满意的。
+ * 书店老板知道一个秘密技巧，能抑制自己的情绪，可以让自己连续 X 分钟不生气，但却只能使用一次。
+ * 请你返回这一天营业下来，最多有多少客户能够感到满意的数量。
+ * 示例：
+ * 输入：customers = [1,0,1,2,1,1,7,5], grumpy = [0,1,0,1,0,1,0,1], X = 3
+ * 输出：16
+ * 解释：
+ * 书店老板在最后 3 分钟保持冷静。
+ * 感到满意的最大客户数量 = 1 + 1 + 1 + 1 + 7 + 5 = 16.
+ * 提示：
+ * 1 <= X <= customers.length == grumpy.length <= 20000
+ * 0 <= customers[i] <= 1000
+ * 0 <= grumpy[i] <= 1
+ * 思路:
+ * 滑动窗口问题：
+ * 取不生气区间中，满意数量最大的区间，相当于一个X长度的窗口对X ~ customers.length - 1进行滑动筛选
+ */
+public class GrumpyBookstoreOwner {
+    private int saverSatisfiedNum;
+    public int maxSatisfied(int[] customers, int[] grumpy, int X) {
+        int maxSatisfied = 0;
+        /*if (X == 0) {
+            for (int index = 0; index < customers.length; index++) {
+                maxSatisfied += getSatisfiedNum(index, customers, grumpy);
+            }
+            return maxSatisfied;
+        }
+        List<Integer> continuationIndex = getMaxContinuationIndex(customers, grumpy, X);
+        for (int index = 0; index < customers.length; index++) {
+            if (index >= continuationIndex.get(0) && index <= continuationIndex.get(continuationIndex.size() - 1)) {
+                maxSatisfied += customers[index];
+                continue;
+            }
+            maxSatisfied += getSatisfiedNum(index, customers, grumpy);
+        }*/
+
+        // 优化，先计算初始满意时所有的数量，再加上筛选后的最大满意数量
+        for (int index = 0; index < customers.length; index++) {
+            maxSatisfied += getSatisfiedNum(index, customers, grumpy);
+        }
+        if (X == 0) {
+            return maxSatisfied;
+        }
+        getMaxContinuationIndex(customers, grumpy, X);
+        maxSatisfied += saverSatisfiedNum;
+        return maxSatisfied;
+    }
+
+    private void getMaxContinuationIndex(int[] customers, int[] grumpy, int X) {
+        LinkedList<Integer> temper = new LinkedList<>();
+        int temperSatisfiedNum = 0;
+        // Temp satisfied num
+        for (int i = 0; i < X; i++) {
+            temper.addLast(i);
+            temperSatisfiedNum += grumpy[i] == 1 ? customers[i] : 0;
+        }
+        List<Integer> saver = new ArrayList<>(temper);
+        saverSatisfiedNum = temperSatisfiedNum;
+        int tempRemoveIndex;
+        // Max satisfies num
+        for (int j = X; j < customers.length; j++) {
+            tempRemoveIndex = temper.removeFirst();
+            temperSatisfiedNum -= grumpy[tempRemoveIndex] == 1 ? customers[tempRemoveIndex] : 0;
+            temperSatisfiedNum += grumpy[j] == 1 ? customers[j] : 0;
+            temper.addLast(j);
+            if (saverSatisfiedNum >= temperSatisfiedNum) {
+                continue;
+            }
+            saverSatisfiedNum = temperSatisfiedNum;
+            saver.clear();
+            saver.addAll(temper);
+        }
+        temper.clear();
+        temper = null;
+    }
+
+    private int getSatisfiedNum(int index, int[] customers, int[] grumpy) {
+        return grumpy[index] == 1 ? 0 : customers[index];
+    }
+    
+    public static void main(String[] args) {
+        int[] customers = {1, 0, 1, 2, 1, 1, 7, 5};
+        int[] grumpy = {0, 1, 0, 1, 0, 1, 0, 1};
+        int x = 3;
+//        int[] customers = {1, 0, 1, 2, 1};
+//        int[] grumpy = {0, 1, 0, 1, 0};
+//        int x = 0; // 特殊情况
+        System.out.println(new GrumpyBookstoreOwner().maxSatisfied(customers, grumpy, x));
+    }
+}
