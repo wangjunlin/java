@@ -1,0 +1,67 @@
+/**
+ * 240. 搜索二维矩阵 II
+ * 编写一个高效的算法来搜索 m x n 矩阵 matrix 中的一个目标值 target。该矩阵具有以下特性：
+ * 每行的元素从左到右升序排列。
+ * 每列的元素从上到下升序排列。
+ * 示例:
+ * 现有矩阵 matrix 如下：
+ * [[1,   4,  7, 11, 15],
+ * [2,   5,  8, 12, 19],
+ * [3,   6,  9, 16, 22],
+ * [10, 13, 14, 17, 24],
+ * [18, 21, 23, 26, 30]]
+ * 给定 target = 5，返回 true。
+ * 给定 target = 20，返回 false。
+ * 思路: 与搜索二维矩阵1不同的是，这里每一行的最后不一定会小于下一行的第一个元素
+ */
+public class SearchA2dMatrix2 {
+
+    public boolean searchMatrix(int[][] matrix, int target) {
+        if (matrix.length == 0) {
+            return false;
+        }
+        if (matrix[0].length == 0) {
+            return false;
+        }
+        return binarySearchRow(matrix, 0, matrix.length - 1, target);
+    }
+
+    private boolean binarySearchRow(int[][] matrix, int low, int high, int target) {
+        if (low == high) {
+            return binarySearchCol(matrix[low], 0, matrix[low].length - 1, target);
+        }
+        int midian = (low + high) / 2;
+        if (matrix[midian][matrix[0].length - 1] < target) {
+            return binarySearchRow(matrix, midian + 1, high, target);
+        } else { // matrix[midian][last] Larget than target
+            // 当该中值的最小值大于等于目标值且最大值小于等于目标值，则先对该行进行查找
+            if (matrix[midian][0] <= target) {
+                boolean isFound = binarySearchCol(matrix[midian], 0, matrix[midian].length - 1, target);
+                if (isFound) {
+                    return true;
+                }
+                // 如果找不到，则取搜索前后的行，由于前后的行都是符合条件的，所以同时搜索
+                return binarySearchRow(matrix, low, midian, target) || binarySearchRow(matrix, midian + 1, high, target);
+            } else {
+                return binarySearchRow(matrix, low, midian, target);
+            }
+        }
+    }
+
+    private boolean binarySearchCol(int[] matrixCol, int low, int high, int target) {
+        if (low == high) {
+            return matrixCol[low] == target;
+        }
+        int midian = (low + high) / 2;
+        return binarySearchCol(matrixCol, matrixCol[midian] < target ? midian + 1 : low,
+                matrixCol[midian] < target ? high : midian, target);
+    }
+
+    public static void main(String[] args) {
+        int[][] matrix = {{1, 4, 7, 11, 15}, {2, 5, 8, 12, 19}, {3, 6, 9, 16, 22}, {10, 13, 14, 17, 24}, {18, 21, 23, 26, 30}};
+        int target = 1;
+//        int[][] matrix = {{1, 2}};
+//        int target = 3;
+        System.out.println(new SearchA2dMatrix2().searchMatrix(matrix, target));
+    }
+}
