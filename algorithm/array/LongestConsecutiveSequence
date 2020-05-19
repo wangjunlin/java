@@ -1,0 +1,65 @@
+/**
+ * 128. 最长连续序列
+ * 给定一个未排序的整数数组，找出最长连续序列的长度。
+ * 要求算法的时间复杂度为 O(n)。
+ * 示例:
+ * 输入: [100, 4, 200, 1, 3, 2]
+ * 输出: 4
+ * 解释: 最长连续序列是 [1, 2, 3, 4]。它的长度为 4。
+ * 思路: Map保存每个值，值为key，value为其剩余的次数。 时间复杂度O(n) 空间复杂度O(n)
+ *     如果被使用过，则置为Null
+ */
+public class LongestConsecutiveSequence {
+    public int longestConsecutive(int[] nums) {
+        HashMap<Integer, Integer> consecutiveMap = new HashMap<>(nums.length);
+        loadCacheMap(nums, consecutiveMap);
+        return calcConsecutive(nums, consecutiveMap);
+    }
+
+    private void loadCacheMap(int[] nums, Map<Integer, Integer> map) {
+        for (int num : nums) {
+            map.putIfAbsent(num, 1);
+        }
+    }
+
+    private int calcConsecutive(int[] nums, Map<Integer, Integer> map) {
+        int maxNum = 0;
+        int tempNum;
+        int forwardStep;
+        int backwardStep;
+        for (int num : nums) {
+            if (map.get(num) == null) {
+                continue;
+            }
+            tempNum = 0;
+            tempNum++;
+            forwardStep = 1;
+            backwardStep = -1;
+            while (map.get(num + forwardStep) != null || map.get(num + backwardStep) != null) {
+                if (map.get(num + forwardStep) != null) {
+                    map.put(num + forwardStep, null);
+                    forwardStep++;
+                    tempNum++;
+                }
+                if (map.get(num + backwardStep) != null) {
+                    map.put(num + backwardStep, null);
+                    backwardStep--;
+                    tempNum++;
+                }
+            }
+            if (maxNum >= tempNum) {
+                continue;
+            }
+            maxNum = tempNum;
+        }
+        return maxNum;
+    }
+
+    public static void main(String[] args) {
+//        int[] nums = {100, 4, 200, 1, 3, 2};
+//        int[] nums = {0, 2, 0, 1};
+//        int[] nums = {9, 1, -3, 2, 4, 8, 3, -1, 6, -2, -4, 7};
+        int[] nums = {1, 0, -1};
+        System.out.println(new LongestConsecutiveSequence().longestConsecutive(nums));
+    }
+}
