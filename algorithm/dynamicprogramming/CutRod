@@ -1,0 +1,70 @@
+/**
+ * 钢条切割问题
+ * 给定一段长度为n的钢条和一个价格表p，求钢条切割方案，使得销售额r最大
+ * <p>
+ * 解法:如果一个最优解将钢条切割为k(1<=k<=n)段，则最优切割方案为 n = i1+i2+i3+...+ik
+ * 将钢条切割为长度分别为i1,i2,...,ik小段，得到最大收益 r = p1+p2+...+pk
+ * 一般的，最优收益可以表达为 rn = max(pn,r1+r(n-1),r2+r(n-2),...,r(n-1)+r1)
+ * 里面n-1,n-2参数对应n-1,n-2种方案，相当于可以再次递归
+ * <p>
+ * 长度i  1   2   3   4   5   6   7   8   9   10
+ * 价格p  1   5   8   9   10  17  17  20  24  30
+ */
+public class CutRod {
+
+    private static final int[] priceList = {1, 5, 8, 9, 10, 17, 17, 20, 24, 30};
+    int[] r; // 每个长度最大的总价值
+    int[] s; //每个长度具体切分情况
+
+    public int cutRod(int originRod) {
+        if (originRod > 10) {
+            return Integer.MIN_VALUE;
+        }
+       /* r = new int[originRod + 1];
+        s = new int[originRod + 1];
+        r[0] = 0; // 初始化总价值为0
+        s[0] = 0;
+        for (int j = 1; j <= originRod; j++) {
+            int tempTotle = Integer.MIN_VALUE;
+            for (int i = 1; i <= j; i++) {
+                // 遍历每个比规模为j更小的子问题，由于有一个总价值数组r记录，所以计算过得值无需重复计算
+//                tempTotle = (priceList[i - 1] + r[j - i]) > tempTotle ? (priceList[i - 1] + r[j - i]) : tempTotle; // 对应价格表需要下标-1
+                if ((priceList[i - 1] + r[j - i]) > tempTotle) {
+                    tempTotle = (priceList[i - 1] + r[j - i]) > tempTotle ? (priceList[i - 1] + r[j - i]) : tempTotle;
+                    s[j] = i;
+                }
+            }
+            r[j] = tempTotle;
+        }*/
+        dpByBottomUp(originRod);
+        return r[originRod];
+    }
+
+    private void dpByBottomUp(int originRod) {
+        r = new int[originRod + 1];
+        s = new int[originRod + 1];
+        r[0] = 0;
+        s[0] = 0;
+        int maxPrice;
+        int maxSeg;
+        for (int rod = 1; rod <= originRod; rod++) {
+            maxPrice = 0;
+            maxSeg = 0;
+            for (int searchIndex = 1; searchIndex <= rod; searchIndex++) {
+                if (maxPrice >= priceList[searchIndex - 1] + r[rod - searchIndex]) {
+                    continue;
+                }
+                maxPrice = priceList[searchIndex - 1] + r[rod - searchIndex];
+                maxSeg = searchIndex;
+            }
+            r[rod] = maxPrice;
+            s[rod] = maxSeg;
+        }
+    }
+
+    public static void main(String... args) {
+        CutRod cutRod = new CutRod();
+        System.out.println(cutRod.cutRod(10));
+        System.out.println(Arrays.toString(cutRod.r) + "\r\n" + Arrays.toString(cutRod.s));
+    }
+}
