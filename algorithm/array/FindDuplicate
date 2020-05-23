@@ -1,0 +1,60 @@
+/**
+ * 287. 寻找重复数
+ * 给定一个包含 n + 1 个整数的数组 nums，其数字都在 1 到 n 之间（包括 1 和 n），可知至少存在一个重复的整数。假设只有一个重复的整数，找出这个重复的数。
+ * 示例 1:
+ * 输入: [1,3,4,2,2]
+ * 输出: 2
+ * 示例 2:
+ * 输入: [3,1,3,4,2]
+ * 输出: 3
+ * 说明：
+ * 不能更改原数组（假设数组是只读的）。
+ * 只能使用额外的 O(1) 的空间。
+ * 时间复杂度小于 O(n2) 。
+ * 数组中只有一个重复的数字，但它可能不止重复出现一次。
+ * <p>
+ * 思路: 无法更改原数组，且O(1)的空间复杂度，就代表不能排序，且不能有n长的List，Map等额外空间开销
+ * 这个寻找一个环，利用快慢指针思想
+ */
+public class FindDuplicate {
+    public int findDuplicate(int[] nums) {
+        if (nums.length == 0) {
+            return 0;
+        }
+        int fast = nums[0];
+        int slow = nums[0];
+        while (true) {
+            fast = getNext(nums, getNext(nums, fast));
+            if (fast == -1) {
+                System.out.println("No circle");
+                return 0;
+            }
+            slow = getNext(nums, slow);
+            if (slow == -1) {
+                System.out.println("No circle");
+                return 0;
+            }
+            if (fast == slow) {
+                System.out.println("Contain circle");
+                break;
+            }
+        }
+        fast = nums[0];
+        while (fast != slow) {
+            fast = getNext(nums, fast);
+            slow = getNext(nums, slow);
+        }
+        return fast;
+    }
+
+    private int getNext(int[] nums, int index) {
+        return index >= nums.length ? -1 : nums[index];
+    }
+
+    public static void main(String... args) {
+//        int[] nums = {3, 1, 3, 4, 2};
+        int[] nums = {1, 3, 4, 2, 2};
+//        int[] nums = {2, 5, 9, 6, 9, 3, 8, 9, 7, 1};
+        System.out.println(new FindDuplicate().findDuplicate(nums));
+    }
+}
