@@ -1,0 +1,56 @@
+/**
+ * 84. 柱状图中最大的矩形
+ * 给定 n 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。
+ * 求在该柱状图中，能够勾勒出来的矩形的最大面积。
+ * 以上是柱状图的示例，其中每个柱子的宽度为 1，给定的高度为 [2,1,5,6,2,3]。
+ * 图中阴影部分为所能勾勒出的最大矩形面积，其面积为 10 个单位。
+ * 示例:
+ * 输入: [2,1,5,6,2,3]
+ * 输出: 10
+ * 链接：https://leetcode-cn.com/problems/largest-rectangle-in-histogram
+ * 思路：二分法查找，以最矮的高度为分割，二分查找
+ * 1.判断包含最矮的index的左边、右边、两边的最大举行
+ * 2.二分下去，继续查找
+ */
+public class LargestRectangleInHistogram {
+    public int largestRectangleArea(int[] heights) {
+        if (heights.length == 0) {
+            return 0;
+        }
+        return binarySearch(heights, 0, heights.length - 1);
+    }
+
+    private int binarySearch(int[] heights, int low, int high) {
+        if (low == high) {
+            return heights[low];
+        }
+        int minIndex = low;
+        for (int i = low; i <= high; i++) {
+            if (heights[i] >= heights[minIndex]) {
+                continue;
+            }
+            minIndex = i;
+        }
+        int maxRect;
+        int ret1 = Math.max(calcRangeMaxRect(low, high, heights[minIndex]),
+                Math.max(calcRangeMaxRect(low, minIndex, heights[minIndex]), calcRangeMaxRect(minIndex, high, heights[minIndex])));
+        maxRect = Math.max(ret1, Math.max(binarySearch(heights, low, minIndex == low ? low : minIndex - 1),
+                binarySearch(heights, minIndex == high ? high : minIndex + 1, high)));
+        return maxRect;
+    }
+
+    private int calcRangeMaxRect(int low, int high, int minHeight) {
+        return minHeight * (high - low + 1);
+    }
+
+    public static void main(String[] args) {
+//        int[] heights = {2, 1, 5, 6, 2, 3}; // 10
+//        int[] heights = {0, 1, 9}; // 9
+//        int[] heights = {1, 2, 3, 4, 5}; // 9
+//        int[] heights = {0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1}; // 6
+//        int[] heights = {2, 1, 5, 6, 2, 3}; // 10
+        int[] heights = {4, 2, 0, 3, 2, 4, 3, 4}; // 10
+//        int[] heights = {3, 6, 5, 7, 4, 8, 1, 0}; // 20
+        System.out.println(new LargestRectangleInHistogram().largestRectangleArea(heights));
+    }
+}
