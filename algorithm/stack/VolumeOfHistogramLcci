@@ -1,0 +1,103 @@
+/**
+ * 17.21. 直方图的水量
+ * 给定一个直方图(也称柱状图)，假设有人从上面源源不断地倒水，最后直方图能存多少水量?直方图的宽度为 1。
+ * 上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的直方图，在这种情况下，可以接 6 个单位的水（蓝色部分表示水）。 感谢 Marcos 贡献此图。
+ * 示例:
+ * 输入: [0,1,0,2,1,0,1,3,2,1,2,1]
+ * 输出: 6
+ * 链接：https://leetcode-cn.com/problems/volume-of-histogram-lcci
+ * 思路:同接雨水Trap
+ * 1.单调递减栈，用一个一维数组记录临界点的pop过的值+已经保存的值，如果栈顶是栈中最后一个元素，则当作左边界处理，不加上其记录的值
+ * 2.单调递增栈，2趟遍历，最坏情况O(n^2)，平均O(n+m)
+ */
+public class VolumeOfHistogramLcci {
+    private int maxRect = 0;
+
+    /*public int trap(int[] height) {
+        Deque<Integer> increasingStack = new ArrayDeque<>(height.length); // 索引递增栈
+        int tempRect = 0;
+        for (int i = 0; i < height.length; i++) {
+            tempRect = calcRect(height, increasingStack, i, tempRect);
+        }
+        tempRect = 0;
+        int bound = increasingStack.isEmpty() ? 0 : increasingStack.peek();
+        increasingStack.clear();
+        for (int j = height.length - 1; j > bound - 1; j--) {
+            tempRect = calcRect(height, increasingStack, j, tempRect);
+        }
+        return maxRect;
+    }*/
+
+    private int calcRect(int[] height, @NotNull Deque<Integer> stack, int index, int tempRect) {
+        if (stack.isEmpty()) {
+            stack.push(index);
+            return tempRect;
+        }
+        if (height[stack.peek()] <= height[index]) {
+            maxRect += tempRect;
+            tempRect = 0;
+            stack.push(index);
+            return tempRect;
+        }
+        tempRect += height[stack.peek()] - height[index];
+        return tempRect;
+    }
+
+    public int trap(int[] height) {
+        Deque<Integer> decreasingStack = new ArrayDeque<>(height.length); // 索引递减栈
+        int[] totalPopHeight = new int[height.length];
+        int tempScope;
+        int tempPopHeight;
+        for (int i = 0; i < height.length; i++) {
+            if (decreasingStack.isEmpty()) {
+                decreasingStack.push(i);
+                continue;
+            }
+            if (height[decreasingStack.peek()] > height[i]) {
+                decreasingStack.push(i);
+                continue;
+            }
+            tempPopHeight = 0;
+            int popIndex;
+            // 当前的大于等于栈顶，则出栈
+            int maxHeight = Math.min(height[decreasingStack.peekLast()], height[i]);
+            int lastIndex = -1;
+            while (!decreasingStack.isEmpty()) {
+                // 退出条件: 当前索引高度小于栈顶的索引高度
+                if (height[i] < height[lastIndex = decreasingStack.peek()]) {
+                    break;
+                }
+                // 作为左边界pop，不记录高度
+                if (decreasingStack.size() == 1) {
+                    decreasingStack.pop();
+                    continue;
+                }
+                popIndex = decreasingStack.pop();
+                // pop栈顶的索引高度以及该索引所pop过的总高度
+                tempPopHeight += height[popIndex] + totalPopHeight[popIndex];
+
+            }
+            decreasingStack.push(i);
+            tempScope = maxHeight * (i - lastIndex - 1) - tempPopHeight;
+            // 更新该索引的pop height
+            totalPopHeight[i] = tempPopHeight + tempScope;
+            maxRect += tempScope;
+        }
+        return maxRect;
+    }
+
+    public static void main(String[] args) {
+//        int[] height = {0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1}; // 6
+//        int[] height = {0, 1, 0, 3, 1, 0, 1, 3, 2, 1, 2, 1}; // 9
+//        int[] height = {0, 0, 1, 0, 0, 1, 0, 0}; // 2
+//        int[] height = {0, 1, 0}; // 0
+//        int[] height = {2, 1, 0, 2}; // 3
+//        int[] height = {5, 2, 1, 2, 1, 5}; // 14
+//        int[] height = {0, 7, 1, 4, 6}; // 7
+//        int[] height = {}; // 0
+//        int[] height = {9, 6, 8, 8, 5, 6, 3}; // 3
+        int[] height = {9, 6, 8, 8, 5, 6, 9}; // 12
+
+        System.out.println(new VolumeOfHistogramLcci().trap(height));
+    }
+}
