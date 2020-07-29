@@ -1,0 +1,109 @@
+/**
+ * 剑指 Offer 37. 序列化二叉树
+ * 请实现两个函数，分别用来序列化和反序列化二叉树。
+ * 示例: 
+ * 你可以将以下二叉树：
+ * <p>
+ * 1
+ * / \
+ * 2   3
+ * / \
+ * 4   5
+ * <p>
+ * 序列化为 "[1,2,3,null,null,4,5]"
+ * 注意：本题与主站 297 题相同：https://leetcode-cn.com/problems/serialize-and-deserialize-binary-tree/
+ * 说明: 不允许使用全局/静态/成员变量
+ * 思路：
+ * serialize: 层级遍历转为字符串（队列）
+ * deserialize: 遍历字符串转为树的节点
+ */
+public class SerializeBinaryTree {
+    public static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+
+        TreeNode(int x) {
+            val = x;
+        }
+    }
+
+    // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        if (root == null) {
+            return "";
+        }
+        final TreeNode nullNode = new TreeNode(TreeNode.class.hashCode());
+        StringBuilder serializeBuiler = new StringBuilder();
+        // Level traversal
+        Queue<TreeNode> nodeQueue = new ArrayDeque<>();
+        nodeQueue.add(root);
+        while (!nodeQueue.isEmpty()) {
+            TreeNode popNode = nodeQueue.poll();
+            if ((popNode == null) || (popNode.val == TreeNode.class.hashCode())) {
+                serializeBuiler.append("null").append(',');
+                continue;
+            }
+            serializeBuiler.append(popNode.val).append(',');
+            nodeQueue.add(popNode.left == null ? nullNode : popNode.left);
+            nodeQueue.add(popNode.right == null ? nullNode : popNode.right);
+        }
+        if (serializeBuiler.charAt(serializeBuiler.length() - 1) == ',') {
+            serializeBuiler.deleteCharAt(serializeBuiler.length() - 1);
+        }
+        return serializeBuiler.toString();
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        if (data.isEmpty()) {
+            return null;
+        }
+        String[] dataNodes = data.split(",");
+        if ((dataNodes.length == 0) || (dataNodes[0] == null)) {
+            return null;
+        }
+
+        final TreeNode root = new TreeNode(Integer.parseInt(dataNodes[0]));
+        final Queue<TreeNode> nodeQueue = new ArrayDeque<>();
+        nodeQueue.add(root);
+        boolean isLeftNode = true;
+        TreeNode tempTreeNode;
+        for (int i = 1; i < dataNodes.length; i++) {
+            TreeNode newNode = dataNodes[i].equals("null") ? null : new TreeNode(Integer.parseInt(dataNodes[i]));
+            tempTreeNode = nodeQueue.peek();
+            assert tempTreeNode != null;
+            if (isLeftNode) {
+                isLeftNode = false;
+                tempTreeNode.left = newNode;
+            } else {
+                isLeftNode = true;
+                tempTreeNode.right = newNode;
+                nodeQueue.poll();
+            }
+            if (newNode != null) {
+                nodeQueue.add(newNode);
+            }
+        }
+        return root;
+    }
+
+    public static void main(String[] args) {
+        SerializeBinaryTree t = new SerializeBinaryTree();
+        // [1,2,3,null,null,4,5]
+        TreeNode root = new TreeNode(1);
+        TreeNode node1 = new TreeNode(2);
+        TreeNode node2 = new TreeNode(3);
+        TreeNode node3 = new TreeNode(4);
+        TreeNode node4 = new TreeNode(5);
+        root.left = node1;
+        root.right = node2;
+        node2.left = node3;
+        node2.right = node4;
+
+        // []
+//        TreeNode root = null;
+        System.out.println("Serialize tree node: " + t.serialize(root));
+        System.out.println("Deserialize tree string: " + t.deserialize(t.serialize(root)));
+    }
+}
