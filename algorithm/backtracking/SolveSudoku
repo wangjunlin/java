@@ -1,0 +1,170 @@
+/**
+ * 个数独的解法需遵循如下规则：
+ * 数字 1-9 在每一行只能出现一次。
+ * 数字 1-9 在每一列只能出现一次。
+ * 数字 1-9 在每一个以粗实线分隔的 3x3 宫内只能出现一次。
+ * 空白格用 '.' 表示。
+ * 给定的数独序列只包含数字 1-9 和字符 '.' 。
+ * 你可以假设给定的数独只有唯一解。
+ * 给定数独永远是 9x9 形式的。
+ * <p>
+ * 采用回溯算法，不断尝试
+ */
+public class SolveSudoku {
+
+    private final String[] numArray = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+
+    private boolean isSolve = false; // 判断是否解出
+
+    class Point {
+        int low;
+        int col;
+
+        Point() {
+        }
+
+        Point(int low, int col) {
+            this.low = low;
+            this.col = col;
+        }
+    }
+
+    private void solveSudoku(String[][] board) {
+        Point point = new Point(0, 0);
+        backTrackint(board, point);
+    }
+
+    /**
+     * 回溯递归
+     *
+     * @param board
+     * @param point
+     */
+    private void backTrackint(String[][] board, Point point) {
+        if (isSolve) {
+            System.out.println(Arrays.deepToString(board));
+            return;
+        }
+        if (isSkip(board, point)) {
+            forward(board, point);
+            backTrackint(board, point);
+            if (isSolve) {
+                return;
+            }
+            backward(board, point);
+            return;
+        }
+        String tempSave = board[point.low][point.col];
+        for (String num : numArray) {
+            if (!check(board, point, num)) {
+                continue;
+            }
+            board[point.low][point.col] = num;
+            forward(board, point);
+            backTrackint(board, point);
+            if (isSolve) {
+                return;
+            }
+            backward(board, point);
+            board[point.low][point.col] = tempSave;
+        }
+    }
+
+    /**
+     * 回溯
+     *
+     * @param board
+     * @param point
+     */
+    private void backward(String[][] board, Point point) {
+        if (point.col == 0) {
+            if (point.low == 0) {
+                return;
+            }
+            point.low--;
+            point.col = board[0].length - 1;
+            return;
+        }
+        point.col--;
+    }
+
+    /**
+     * 向前走
+     *
+     * @param board
+     * @param point
+     */
+    private void forward(String[][] board, Point point) {
+        if (point.col >= board[0].length - 1) {
+            if (point.low + 1 == board.length) {
+                isSolve = true;
+                return;
+            }
+            point.low = point.low + 1;
+            point.col = 0;
+            return;
+        }
+        point.col++;
+    }
+
+    /**
+     * 是否可以跳过该坐标
+     *
+     * @param board
+     * @param point
+     * @return
+     */
+    private boolean isSkip(String[][] board, Point point) {
+        return !board[point.low][point.col].equals(".");
+    }
+
+    /**
+     * 条件检查
+     *
+     * @param board
+     * @param point
+     * @param value
+     * @return
+     */
+    private boolean check(String[][] board, Point point, String value) {
+        // 查看对应行和列是否存在相同数字
+        for (int i = 0; i < board[point.low].length; i++) {
+            if (board[point.low][i].equals(value)) {
+                return false;
+            }
+            if (board[i][point.col].equals(value)) {
+                return false;
+            }
+        }
+        // 整除以间隔，判断坐落在哪个3*3网格中
+        int lowIndex = point.low / 3;
+        int colIndex = point.col / 3;
+        for (int i = lowIndex * 3; i < lowIndex * 3 + 3; i++) {
+            for (int j = colIndex * 3; j < colIndex * 3 + 3; j++) {
+                if (i == point.low && j == point.col) {
+                    continue;
+                }
+                if (!board[i][j].equals(value)) {
+                    continue;
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void main(String... args) {
+        String[][] board = {{"5", "3", ".", ".", "7", ".", ".", ".", "."},
+                {"6", ".", ".", "1", "9", "5", ".", ".", "."},
+                {".", "9", "8", ".", ".", ".", ".", "6", "."},
+                {"8", ".", ".", ".", "6", ".", ".", ".", "3"},
+                {"4", ".", ".", "8", ".", "3", ".", ".", "1"},
+                {"7", ".", ".", ".", "2", ".", ".", ".", "6"},
+                {".", "6", ".", ".", ".", ".", "2", "8", "."},
+                {".", ".", ".", "4", "1", "9", ".", ".", "5"},
+                {".", ".", ".", ".", "8", ".", ".", "7", "9"}};
+        SolveSudoku sudoku = new SolveSudoku();
+        sudoku.solveSudoku(board);
+        System.out.println(Arrays.deepToString(board));
+    }
+}
