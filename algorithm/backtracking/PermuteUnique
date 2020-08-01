@@ -1,0 +1,53 @@
+/**
+ * 给定一个可包含重复数字的序列，返回所有不重复的全排列。
+ * 输入: [1,1,2]
+ * 输出:
+ * [
+ * [1,1,2],
+ * [1,2,1],
+ * [2,1,1]
+ * ]
+ * 先排序,再遍历,做标记,剪枝（和子集、组合不同的是，判断是否重复主要针对当前的方法，而不是下个回溯的方法）
+ * 纸上画一下过程
+ */
+public class PermuteUnique {
+    private int size;
+    private int unused = Integer.MIN_VALUE;
+
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        size = nums.length;
+        Arrays.sort(nums);
+        List<List<Integer>> results = new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        backTracking(nums, result, results);
+        return results;
+    }
+
+    private void backTracking(int[] nums, List<Integer> result, List<List<Integer>> results) {
+        if (result.size() == size) {
+            results.add(new ArrayList<>(result));
+            return;
+        }
+        int save;
+        for (int i = 0; i < size; i++) {
+            if (nums[i] == unused) {
+                continue;
+            }
+            // 对当前的循环，下一个值和上一个值相同，则跳过
+            if (i - 1 > -1 && nums[i - 1] == nums[i]) {
+                continue;
+            }
+            save = nums[i];
+            result.add(save);
+            nums[i] = unused;
+            backTracking(nums, result, results);
+            nums[i] = save;
+            result.remove(result.size() - 1);
+        }
+    }
+
+    public static void main(String... args) {
+        int[] nums = {1, 1, 1, 2};
+        System.out.println(new PermuteUnique().permuteUnique(nums));
+    }
+}
