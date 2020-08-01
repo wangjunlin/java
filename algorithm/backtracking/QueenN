@@ -1,0 +1,82 @@
+/**
+ * n 皇后问题研究的是如何将 n 个皇后放置在 n×n 的棋盘上，并且使皇后彼此之间不能相互攻击。
+ * 给定一个整数 n，返回所有不同的 n 皇后问题的解决方案。
+ * 每一种解法包含一个明确的 n 皇后问题的棋子放置方案，该方案中 'Q' 和 '.' 分别代表了皇后和空位。
+ * 输入: 4
+ * 输出: [
+ * [".Q..",  // 解法 1
+ * "...Q",
+ * "Q...",
+ * "..Q."],
+ * <p>
+ * ["..Q.",  // 解法 2
+ * "Q...",
+ * "...Q",
+ * ".Q.."]
+ * ]
+ * <p>
+ * 老思路,回溯,三件套,solve backTracing isValid
+ */
+public class QueenN {
+
+    private int size;
+
+    public List<List<String>> solveNQueens(int n) {
+        size = n;
+        List<List<String>> results = new ArrayList<>();
+        char[][] chessboard = new char[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                chessboard[i][j] = '.';
+            }
+        }
+        backTracing(chessboard, 0, results);
+        return results;
+    }
+
+    private void backTracing(char[][] board, int low, List<List<String>> results) {
+        if (low == size) {
+            List<String> result = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                result.add(String.valueOf(board[i]));
+            }
+            results.add(result);
+        }
+
+        for (int col = 0; col < size; col++) {
+            if (!isValid(board, low, col)) {
+                continue;
+            }
+            board[low][col] = 'Q';
+            backTracing(board, low + 1, results);
+            board[low][col] = '.';
+        }
+    }
+
+    private boolean isValid(char[][] board, int low, int col) {
+        for (int i = 0; i < size; i++) {
+            if (board[i][col] != 'Q') {
+                continue;
+            }
+            return false;
+        }
+        for (int i = 0; i < low; i++) {
+            if (col - 1 - i >= 0) {
+                if (board[low - 1 - i][col - 1 - i] == 'Q') {
+                    return false;
+                }
+            }
+            if (col + 1 + i < size) {
+                if (board[low - 1 - i][col + 1 + i] == 'Q') {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static void main(String... args) {
+        System.out.println(new QueenN().solveNQueens(4));
+        System.out.println(new QueenN().solveNQueens(8));
+    }
+}
