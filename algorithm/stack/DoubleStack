@@ -1,0 +1,134 @@
+/**
+ * 使用1个数组A[0..n-1]中实现2个栈，2个栈元素个数和不为n，两者不会发生上溢，要求push和pop操作运行时间为O(1)
+ * 思路：创建2个栈，栈底分别为0和n-1
+ * push: 先插入满第一个栈后再插入第二个
+ * pop: 先弹出第二个栈再弹出第一个栈
+ */
+public class DoubleStack {
+    private static final int UNDERFLOW = Integer.MIN_VALUE;
+    /**
+     * 长度
+     */
+    private int n = 16;
+
+    private int[] array = new int[n];
+
+    private Stack1 stack1;
+    private Stack2 stack2;
+
+    public DoubleStack() {
+        stack1 = new Stack1();
+        stack2 = new Stack2();
+    }
+
+    public void push(int key) throws Exception {
+        if (stack1.push(key)) {
+            return;
+        }
+        stack2.push(key);
+    }
+
+    public int pop() throws Exception {
+        int result = stack2.pop();
+        if (result != UNDERFLOW) {
+            return result;
+        }
+        result = stack1.pop();
+        return result;
+    }
+
+    private class Stack1 {
+        private int top1 = -1;
+
+        private Stack1() {
+
+        }
+
+        boolean isEmpty() {
+            return top1 == -1;
+        }
+
+        boolean push(int key) {
+
+            if (top1 > (n - 1) / 2) {
+                return false;
+            }
+            top1++;
+            array[top1] = key;
+            return true;
+        }
+
+        int pop() throws Exception {
+            if (isEmpty()) {
+                throw new Exception("underflow 1");
+            }
+            array[top1] = 0;
+            top1--;
+            return array[top1 + 1];
+        }
+    }
+
+    private class Stack2 {
+        private int top = n;
+
+        private Stack2() {
+
+        }
+
+        boolean isEmpty() {
+            return top == n;
+        }
+
+        void push(int key) throws Exception {
+
+            if (top < ((n - 1) / 2) + 1) {
+                throw new Exception("overflow");
+            }
+            top--;
+            array[top] = key;
+        }
+
+        int pop() {
+            if (isEmpty()) {
+                return UNDERFLOW;
+            }
+            array[top] = 0;
+            top++;
+            return array[top - 1];
+        }
+    }
+
+
+    public static void main(String... args) throws Exception {
+        DoubleStack stack = new DoubleStack();
+        stack.push(1);
+        stack.push(2);
+        stack.push(3);
+        stack.push(4);
+        stack.push(5);
+        stack.push(6);
+        stack.push(7);
+        stack.push(8);
+        stack.push(9);
+        stack.push(10);
+        stack.push(11);
+        stack.push(12);
+        stack.push(13);
+        stack.push(14);
+        stack.push(15);
+        stack.push(16);
+//        stack.push(17);
+        stack.pop();
+        stack.pop();
+        stack.pop();
+        stack.pop();
+        stack.pop();
+        stack.pop();
+        stack.pop();
+        stack.pop();
+        stack.pop();
+        stack.pop();
+        stack.pop();
+        System.out.println(Arrays.toString(stack.array));
+    }
+}
