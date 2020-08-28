@@ -1,0 +1,96 @@
+/**
+ * CLH锁实现
+ *
+ *  Head <----- Node1 <----- Node2 <----- Tail
+ *  每当主线程持有的Node解锁时，ThreadLocal中的变量要刷新，否则会产生死锁
+ *
+ * 基于list实现，每个线程基于当前节点的前驱节点局部变量进行自旋
+ * Lock(): 对每个当前线程封装成一个Node，并加入链表tail，原tail前驱节点作为当前节点的前驱
+ * unLock(): 对解锁线程，获取其在ThreadLocal中对应的当前Node，并把当前线程Node移除，设置为前驱Node，相当于出队列
+ */
+public class CLHLock implements Lock {
+
+    private static class CLHNode {
+        protected volatile boolean isLocked;
+        protected String threadName;
+        // Thread reference
+        protected volatile Thread ref = null;
+        protected CLHNode(final boolean locked, String threadName) {
+            isLocked = locked;
+            this.threadName = threadName;
+        }
+    }
+
+    private static final CLHNode headNode = new CLHNode(false, Thread.currentThread().getName());
+
+    /**
+     * 尾节点，指向一个head节点，每个线程进来后，构造成一个节点并插入到队列尾
+     */
+    private final AtomicReference<CLHNode> tailNode = new AtomicReference<>(headNode);
+
+    /**
+     * 保存各个线程对应的前继节点
+     */
+    private final ThreadLocal<CLHNode> prevLockNode = new ThreadLocal<>();
+
+    /**
+     * 保存各个线程对应的节点
+     */
+    private final ThreadLocal<CLHNode> nowLockNode = new ThreadLocal<>();
+
+    public CLHLock() {
+        // 初始化头节点
+        nowLockNode.set(headNode);
+    }
+
+    @Override
+    public void lock() {
+        CLHNode nowNode = nowLockNode.get();
+        if (nowNode == null) {
+            nowLockNode.set(new CLHNode(true, Thread.currentThread().getName()));
+            nowNode = nowLockNode.get();
+        }
+        nowNode.isLocked = true;
+        // 更新尾节点为当前线程节点
+        CLHNode prevNode = tailNode.getAndSet(nowNode);
+        // 获取前节点，并放入PrevThreadLocal
+        prevLockNode.set(prevNode);
+        // Thread spin
+        while (prevNode.isLocked) {}
+        System.out.printf("My node name: %s , Prev node name %s is unLocked\n", nowNode.threadName, prevNode.threadName);
+    }
+
+    @Override
+    public void unlock() {
+        // 获取自身的node，设置为false
+        CLHNode nowNode = nowLockNode.get();
+        if (nowNode == null) {
+            return;
+        }
+        nowNode.isLocked = false;
+        // nowLockNode.set(nowNode); 会导致死锁
+        // 获取前驱的node，相当于当前节点出队列
+        nowLockNode.set(prevLockNode.get());
+    }
+
+    @Override
+    public void lockInterruptibly() throws InterruptedException {
+
+    }
+
+    @Override
+    public boolean tryLock() {
+        return false;
+    }
+
+    @Override
+    public boolean tryLock(long time, @NotNull TimeUnit unit) throws InterruptedException {
+        return false;
+    }
+
+    @NotNull
+    @Override
+    public Condition newCondition() {
+        return null;
+    }
+}
