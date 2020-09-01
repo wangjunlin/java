@@ -1,0 +1,109 @@
+/**
+ * MCS(John Mellor-Crummey and Michael Scott) spin lock
+ * MCSLock基于链表，能够减少缓存更新频率，每个线程只在自己线程域中轮询锁
+ * 持有锁的信号由第一个Node开始，逐渐传递下去
+ *
+ * Lock()
+ * - 每个CPU试图获取一个锁时，把自己加入自旋锁队列，插入方式为队列尾的MCSLock的next指向该新节点
+ * - 每个线程都在轮询本地变量，等待前驱节点的通知
+ * Unlock()
+ * - 先检测该CPU是否持有锁，只有持有锁才有效
+ * - 检查是否有线程节点为自身后继，通过CAS判断，如果没有线程排队，则方法出栈
+ * - 如果存在排队线程，则传递锁信息给nextNode，该线程出队列
+ *      CPU   notify  (spin)  notify  (spin)
+ *     Node1---------->Node2---------->Node3
+ *
+ */
+public class MCSLock implements Lock {
+
+    protected static class MCSNode {
+        String nodeName;
+        /**
+         * 该节点连接的下个节点，完成任务后通知下个节点
+         */
+        volatile MCSNode next;
+        /**
+         * 是否获取到锁对象
+         * true: 持有锁
+         * false: 未持有锁
+         */
+        volatile boolean isHoldLock;
+
+        MCSNode(String threadName, MCSNode nextNode, boolean holdLock) {
+            nodeName = threadName;
+            next = nextNode;
+            isHoldLock = holdLock;
+        }
+    }
+
+    private volatile MCSNode tailNode = null;
+
+    private static final AtomicReferenceFieldUpdater<MCSLock, MCSNode> MCS_NODE_LOCK_STATUS_TRANSFER =
+        AtomicReferenceFieldUpdater.newUpdater(MCSLock.class, MCSNode.class, "tailNode");
+
+    private final ThreadLocal<MCSNode> threadNodes = new ThreadLocal<>();
+
+    public MCSLock() {}
+
+    @Override
+    public void lock() {
+        System.out.printf("Thread %s require lock\n", Thread.currentThread().getName());
+        // 为当前线程创建一个MCSNode
+        MCSNode currentMCSNode = new MCSNode(Thread.currentThread().getName(), null, false);
+        threadNodes.set(currentMCSNode);
+        // 首先判断链表中是否有线程在等待，没有则直接加锁成功并返回
+        MCSNode prevNode = MCS_NODE_LOCK_STATUS_TRANSFER.getAndSet(this, currentMCSNode);
+        // 链表中没有锁竞争者，则直接返回
+        if (prevNode == null) {
+            currentMCSNode.isHoldLock = true;
+            return;
+        }
+        // 更新前驱节点的next为当前线程节点
+        prevNode.next = currentMCSNode;
+        while (!currentMCSNode.isHoldLock) {}
+        System.out.printf("Prev node %s notify my node %s, my node obtain lock\n", prevNode.nodeName, currentMCSNode.nodeName);
+    }
+
+    @Override
+    public void unlock() {
+        System.out.printf("Thread %s release lock\n", Thread.currentThread().getName());
+        MCSNode myNode = threadNodes.get();
+        if (myNode == null || !myNode.isHoldLock) {
+            return;
+        }
+        // 获取当前Node的后继节点，如果为空，并且CAS设置tailNode不成功，则说明有线程正在加入，但是没到更新next的步骤
+        if (myNode.next == null && !MCS_NODE_LOCK_STATUS_TRANSFER.compareAndSet(this, myNode, null)) {
+            // 等待直到next节点设置成功
+            while (myNode.next == null) {}
+        }
+        if (myNode.next != null) {
+            // 走到这里说明有线程在等待获取，把锁传递给下个Node
+            myNode.next.isHoldLock = true;
+            // 并把next指向为空
+            myNode.next = null;
+        }
+        // 出队列
+        threadNodes.remove();
+    }
+
+    @Override
+    public void lockInterruptibly() throws InterruptedException {
+
+    }
+
+    @Override
+    public boolean tryLock() {
+        return false;
+    }
+
+    @Override
+    public boolean tryLock(long time, @NotNull TimeUnit unit) throws InterruptedException {
+        return false;
+    }
+
+    @NotNull
+    @Override
+    public Condition newCondition() {
+        return null;
+    }
+}
