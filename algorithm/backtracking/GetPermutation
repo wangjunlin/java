@@ -1,0 +1,74 @@
+/**
+ * 给出集合 [1,2,3,…,n]，其所有元素共有 n! 种排列。
+ * 按大小顺序列出所有排列情况，并一一标记，当 n = 3 时, 所有排列如下：
+ * "123"
+ * "132"
+ * "213"
+ * "231"
+ * "312"
+ * "321"
+ * 给定 n 和 k，返回第 k 个排列。
+ * 示例 1:
+ * 输入: n = 3, k = 3
+ * 输出: "213"
+ * 示例 2:
+ * 输入: n = 4, k = 9
+ * 输出: "2314"
+ * <p>
+ * 即使剪枝也效率感人，顶多不超时
+ * 用数学法做
+ */
+public class GetPermutation {
+    private int seq;
+    private String result = "";
+    private int numsLength;
+    private int targetSeq;
+    private boolean isEnd = false;
+
+    public String getPermutation(int n, int k) {
+        numsLength = n;
+        targetSeq = k;
+        int[] nums = new int[n];
+        for (int i = 0; i < n; i++) {
+            nums[i] = i + 1;
+        }
+        List<Integer> temp = new ArrayList<>(k);
+        backTracking(nums, temp);
+        return result;
+    }
+
+    private void backTracking(int[] nums, List<Integer> temp) {
+        if (temp.size() == numsLength) {
+            seq++;
+            if (seq == targetSeq) {
+                for (Integer num : temp) {
+                    result += num;
+                }
+                isEnd = true;
+            }
+            return;
+        }
+        int save;
+        for (int i = 0; i < numsLength; i++) {
+            if (isEnd) {
+                break;
+            }
+            if (nums[i] == 0) {
+                continue;
+            }
+            save = nums[i];
+            temp.add(save);
+            nums[i] = 0;
+            backTracking(nums, temp);
+            temp.remove(temp.size() - 1);
+            nums[i] = save;
+        }
+    }
+
+    public static void main(String... args) {
+        int n = 2;
+        int k = 2;
+//        int n = 4;int k = 9;
+        System.out.println(new GetPermutation().getPermutation(n, k));
+    }
+}
