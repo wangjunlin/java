@@ -1,0 +1,101 @@
+/**
+ * 给定一个无重复元素的数组 candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合。
+ * candidates 中的数字可以无限制重复被选取。
+ * 所有数字（包括 target）都是正整数。解集不能包含重复的组合。
+ * 输入: candidates = [2,3,5], target = 8,
+ * 所求解集为:
+ *  [[2,2,2,2],
+ *   [2,3,3],
+ *   [3,5]]
+ * 思路：假设result list长为n,则0到n-1每一位从candidates中遍历
+ * 先排序，后面不会出现比前面数字小的数
+ */
+public class CombinationSum {
+    private int target;
+    private int size;
+
+    /*public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        this.target = target;
+        size = candidates.length;
+        List<List<Integer>> results = new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        backTracking(candidates, 0, result, results);
+        for (List<Integer> temp : results) {
+            temp.sort(Comparator.comparingInt(o -> o));
+        }
+        for (int i = 0; i < results.size() - 1; i++) {
+            for (int j = 0; j < results.size();j++){
+                if (i == j ){
+                    continue;
+                }
+                if (!results.get(i).toString().intern().equals(results.get(j).toString().intern())){
+                    continue;
+                }
+                results.remove(j);
+                j--;
+            }
+        }
+        return results;
+    }*/
+
+    /*private void backTracking(int[] candidates, int total, List<Integer> result, List<List<Integer>> results) {
+        if (total > target) {
+            return;
+        }
+        if (total == target) {
+            results.add(new ArrayList<>(result));
+            return;
+        }
+        for (int i = 0; i < size; i++) {
+            result.add(candidates[i]);
+            total += candidates[i];
+            backTracking(candidates, total, result, results);
+            result.remove(result.size() - 1);
+            total -= candidates[i];
+        }
+    }*/
+
+    /**
+     * 改进版
+     *
+     * @param candidates
+     * @param target
+     * @return
+     */
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        this.target = target;
+        size = candidates.length;
+        List<List<Integer>> results = new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        List<Integer> sortList = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            sortList.add(candidates[i]);
+        }
+        sortList.sort(Comparator.comparingInt(o -> o));
+        backTracking(sortList, 0, 0, result, results);
+        return results;
+    }
+
+    private void backTracking(List<Integer> candidates, int total, int index, List<Integer> result, List<List<Integer>> results) {
+        if (total > target) {
+            return;
+        }
+        if (total == target) {
+            results.add(new ArrayList<>(result));
+            return;
+        }
+        /*防止重复值，只是顺序不同*/
+        for (int i = index; i < candidates.size(); i++) {
+            result.add(candidates.get(i));
+            total += candidates.get(i);
+            backTracking(candidates, total, i, result, results);
+            result.remove(result.size() - 1);
+            total -= candidates.get(i);
+        }
+    }
+
+    public static void main(String... args) {
+        int[] nums = {2, 3, 5};
+        System.out.println(new CombinationSum().combinationSum(nums, 8));
+    }
+}
