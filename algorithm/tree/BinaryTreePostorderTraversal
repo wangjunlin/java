@@ -1,6 +1,6 @@
 /**
  * 145. 二叉树的后序遍历
- * 给定一个二叉树，返回它的 后序 遍历。
+ * 给定一个二叉树，返回它的 后序遍历。
  * 示例:
  * 输入: [1,null,2,3]
  * 1
@@ -10,53 +10,40 @@
  * 3
  * <p>
  * 输出: [3,2,1]
- * 进阶: 递归算法很简单，你可以通过迭代算法完成吗？
- * 思路: 先用常用递归解法，再用栈来解决
+ * 进阶:递归算法很简单，你可以通过迭代算法完成吗？
+ * 思路: 先用常用递归解法，再用栈来解决  后序为 左->右->根，可以根->右->左，最后再反转
  */
 public class BinaryTreePostorderTraversal {
 
     public List<Integer> postorderTraversal(TreeNode root) {
         List<Integer> results = new ArrayList<>();
-//        recursive(root, results);
-        withoutRecursive(root, results);
+//        recursiveSearch(root, results);
+        iterateSearch(root, results);
         return results;
     }
 
-    private void recursive(TreeNode node, List<Integer> results) {
+    private void recursiveSearch(TreeNode node, List<Integer> results) {
         if (node == null) {
             return;
         }
-        recursive(node.left, results);
-        recursive(node.right, results);
+        recursiveSearch(node.left, results);
+        recursiveSearch(node.right, results);
         results.add(node.val);
     }
 
-    /**
-     * 会对原始数据进行修改，以用来节省空间
-     * @param node       TreeNode root
-     * @param results    Postorder lists
-     */
-    private void withoutRecursive(TreeNode node, List<Integer> results) {
-        if (node == null) {
-            return;
-        }
-        Deque<TreeNode> nodeDeque = new ArrayDeque<>();
-        nodeDeque.push(node);
-        while (!nodeDeque.isEmpty()) {
-            TreeNode peekNode = nodeDeque.peekFirst();
-            if ((peekNode.left == null) && (peekNode.right == null)) {
-                results.add(peekNode.val);
-                nodeDeque.pop();
-                continue;
+    private void iterateSearch(TreeNode root, List<Integer> results) {
+        Deque<TreeNode> fatherDeque = new ArrayDeque<>();
+        TreeNode currNode = root;
+        while ((currNode != null) || !fatherDeque.isEmpty()) {
+            while (currNode != null) {
+                results.add(currNode.val);
+                fatherDeque.push(currNode);
+                currNode = currNode.right;
             }
-            if (peekNode.left != null) {
-                nodeDeque.push(peekNode.left);
-                peekNode.left = null;
-                continue;
-            }
-            nodeDeque.push(peekNode.right);
-            peekNode.right = null;
+            currNode = fatherDeque.pop();
+            currNode = currNode.left;
         }
+        Collections.reverse(results);
     }
 
     public static void main(String[] args) {
